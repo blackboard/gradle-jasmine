@@ -4,15 +4,7 @@ apply plugin: 'eclipse'
 apply plugin: 'idea'
 
 group 'blackboard'
-version '1.0-SNAPSHOT'
-
-repositories {
-  mavenCentral()
-}
-
-project.ext {
-  mavenVersion     = "3.1.0"
-}
+version '1.0'
 
 dependencies {
   compile gradleApi()
@@ -23,17 +15,11 @@ uploadArchives {
   def nexusUsername = "$System.env.NEXUS_USERNAME".trim()
   def nexusPassword = "$System.env.NEXUS_PASSWORD".trim()
 
-  if (project.hasProperty("jenkinsMavenUsername")) {
-    nexusUsername = jenkinsMavenUsername
-  }
-
-  if (project.hasProperty("jenkinsMavenPassword")) {
-    nexusPassword = jenkinsMavenPassword
-  }
+  println nexusUsername
 
   repositories {
     mavenDeployer {
-      repository ( url: 'http://maven.pd.local/content/repositories/snapshots' ) {
+      repository ( url: 'https://maven.blackboard.com/content/repositories/releases' ) {
         authentication ( userName: nexusUsername, password: nexusPassword )
       }
     }
