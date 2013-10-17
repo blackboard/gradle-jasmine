@@ -7,7 +7,7 @@ The gradle-jasmine plugin adds Jasmine/PhantomJS integration to Gradle.  To use,
             }
         }
         dependencies {
-            classpath "blackboard:gradle-jamsine:1.0-SNAPSHOT"
+            classpath "blackboard:gradle-jamsine:1.0"
         }
     }
 
