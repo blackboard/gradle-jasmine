@@ -11,7 +11,7 @@ The gradle-jasmine plugin adds Jasmine/PhantomJS integration to Gradle.  To use,
 
     apply plugin: "jasmine"
 
-By default, all \z*.js files under *src/test/jasmine* will be run as Jasmine test specs.  You can add additional source directories
+By default, all \*.js files under *src/test/jasmine* will be run as Jasmine test specs.  You can add additional source directories
 to the Jasmine plugin:
 
     jasmine.srcDir "src/main/javascript"
