@@ -4,7 +4,7 @@ apply plugin: 'eclipse'
 apply plugin: 'idea'
 
 group 'blackboard'
-version '1.1-SNAPSHOT'
+version '1.0'
 
 dependencies {
   compile gradleApi()
@@ -19,7 +19,7 @@ uploadArchives {
 
   repositories {
     mavenDeployer {
-      repository ( url: 'https://maven.blackboard.com/content/repositories/releases' ) {
+      repository ( url: 'http://maven.pd.local/content/repositories/releases' ) {
         authentication ( userName: nexusUsername, password: nexusPassword )
       }
     }
