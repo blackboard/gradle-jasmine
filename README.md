@@ -3,8 +3,8 @@ The gradle-jasmine plugin adds Jasmine/PhantomJS integration to Gradle.  To use,
     buildscript {
         repositories {
             maven {
-		url "https://maven.blackboard.com/content/repositories/releases"
-	    }
+                url "https://maven.blackboard.com/content/repositories/releases"
+            }
         }
         dependencies {
             classpath "blackboard:gradle-jamsine:1.0-SNAPSHOT"
