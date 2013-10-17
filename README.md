@@ -67,5 +67,4 @@ The runner would look like this:
       </body>
     </html>
 
-NOTE: You must have PhantomJS installed and in your execution path on whatever test platform your run on.
-=======================================
+## NOTE: You must have PhantomJS installed and in your execution path on whatever test platform your run on.
