@@ -13,8 +13,12 @@ class JasmineTask extends DefaultTask {
 
   SourceDirectorySet source;
 
-  public SourceDirectorySet getSource() {
-    return source
+  public SourceDirectorySet srcDir( Object dir ) {
+    return source.srcDir( dir )
+  }
+
+  public SourceDirectorySet srcDirs( Object... dirs ) {
+    return source.srcDirs( dirs )
   }
 
   protected void setFileResolver( FileResolver resolver ) {
@@ -30,23 +34,41 @@ class JasmineTask extends DefaultTask {
     }
   }
 
-  def writeResource( String name, JarFile jar, String path ) {
+  def writeResourceToStream( String name, JarFile jar, FileWriter out ) {
     JarEntry entry = jar.getEntry( name )
     def stream = jar.getInputStream( entry )
-    def out = new FileWriter( path + name )
 
     try {
       stream.eachLine { line ->
         out.println( line )
       }
+
+      out.println()
+      out.flush()
     }
     finally {
-      out.close()
       stream.close()
     }
   }
 
+  def writeResourceToFile( String name, JarFile jar, String file, boolean append ) {
+    def out = new FileWriter( file, append )
+
+    try {
+      writeResourceToStream( name, jar, out )
+    }
+    finally {
+      out.close()
+    }
+  }
+
+  def writeResourceToPath( String name, JarFile jar, String path ) {
+    writeResourceToFile( name, jar, path + name, false )
+  }
+
   def writeJasmineResources( path ) {
+    def gradleJasmine = path + "jasmine.js"
+
     project.buildscript.configurations.classpath.each { artifact ->
       JarFile jar = new JarFile( artifact )
 
@@ -54,11 +76,11 @@ class JasmineTask extends DefaultTask {
         JarEntry entry = jar.getEntry( "jasmine.js" )
 
         if ( entry ) {
-          writeResource( "jasmine.js", jar, path )
-          writeResource( "jasmine-html.js", jar, path )
-          writeResource( "jasmine.console_reporter.js", jar, path )
-          writeResource( "jasmine.junit_reporter.js", jar, path )
-          writeResource( "run-jasmine.js", jar, path )
+          writeResourceToFile( "jasmine.js", jar, gradleJasmine, false )
+          writeResourceToFile( "jasmine-html.js", jar, gradleJasmine, true )
+          writeResourceToFile( "jasmine-init.js", jar, gradleJasmine, true )
+          writeResourceToPath( "jasmine-execute.js", jar, path )
+          writeResourceToPath( "run-jasmine.js", jar, path )
         }
       }
       finally {
@@ -77,56 +99,43 @@ class JasmineTask extends DefaultTask {
     def driver = project.file( jasmineTestPath + "/" + "jasmine.html" )
 
     driver.withPrintWriter { out ->
-      out.println( '<html><head>\n' +
-              '  <script type="text/javascript" src="jasmine.js"></script>\n' +
-              '  <script type="text/javascript" src="jasmine-html.js"></script>\n' +
-              '  <script type="text/javascript">\n' +
-              '    (function() {\n' +
-              '      var jasmineEnv = jasmine.getEnv();\n' +
-              '      jasmineEnv.updateInterval = 1000;\n' +
-              '      jasmineEnv.addReporter(new jasmine.HtmlReporter());\n' +
-              '      window.onload = function() {\n' +
-              '        jasmineEnv.execute();\n' +
-              '      };\n' +
-              '    })();\n' +
-              '  </script>');
-
-      def scriptTagWritten = false
+      out.println( '<html>\n  <head>\n    <script type="text/javascript" src="jasmine.js"></script>\n' +
+              '    <script type="text/javascript" src="jasmine-execute.js"></script>' )
 
       project.file( file ).eachLine { line ->
         if ( line.trim().startsWith( "testing(") ) {
           def includeFile = line.trim().substring( 8, line.trim().lastIndexOf( ')' ) ).trim()
-          includeFile = findFileUnderTest( file, jasmineTestPath, includeFile.substring( 1, includeFile.length() - 1 ) )
-
-          out.println( '<script type="text/javascript" src="' + includeFile.absolutePath + '"></script>' )
+          includeFile = findFileUnderTest( file, includeFile.substring( 1, includeFile.length() - 1 ) )
+          out.println( '    <script type="text/javascript" src="' + includeFile.absolutePath + '"></script>' )
         }
-        else {
-          if ( !scriptTagWritten )
-            out.println( '<script type="text/javascript">' )
-
-          scriptTagWritten = true
-          out.println( line )
+        else if ( line.trim().startsWith( "runWith(") ) {
+          def runFile = line.trim().substring( 8, line.trim().lastIndexOf( ')' ) ).trim()
+          driver = findFileUnderTest( file, runFile.substring( 1, runFile.length() - 1 ) )
         }
       }
 
-      out.println( '</script></head><body></body></html>' )
+      out.println( '    <script type="text/javascript" src="' + file.absolutePath + '"></script>' )
+      out.println( '  </head>\n  <body>\n  </body>\n</html>' )
     }
 
+    def phantomjs = (System.getProperty("os.name").toLowerCase().contains("windows") ? "phantomjs.exe" : "phantomjs")
     project.exec {
-      commandLine = ['phantomjs', project.buildDir.absolutePath + '/jasmine/run-jasmine.js', driver.absolutePath]
+      commandLine = [phantomjs, jasmineTestPath + 'run-jasmine.js', driver.absolutePath]
     }
   }
 
-  def findFileUnderTest( File specFile, String jasmineTestPath, String testingPath ) {
-    // first check relative to the current path
-    def file = project.file( testingPath )
+  def findFileUnderTest( File specFile, String testingPath ) {
+    // relative to the test spec
+    def file = new File( specFile.parentFile, testingPath )
     if (file.exists())
       return file
 
-    file = project.file( jasmineTestPath + "/" + testingPath )
+    // from project root
+    file = project.file( testingPath )
     if (file.exists())
       return file
 
+    // from webapp root
     return project.file( "src/main/webapp/" + testingPath )
   }
 
