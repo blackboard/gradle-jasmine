@@ -80,15 +80,11 @@ class JasmineTask extends DefaultTask {
       out.println( '<html><head>\n' +
               '  <script type="text/javascript" src="jasmine.js"></script>\n' +
               '  <script type="text/javascript" src="jasmine-html.js"></script>\n' +
-              '  <script type="text/javascript" src="jasmine.console_reporter.js"></script>\n' +
-              '  <script type="text/javascript" src="jasmine.junit_reporter.js"></script>\n' +
               '  <script type="text/javascript">\n' +
               '    (function() {\n' +
               '      var jasmineEnv = jasmine.getEnv();\n' +
               '      jasmineEnv.updateInterval = 1000;\n' +
               '      jasmineEnv.addReporter(new jasmine.HtmlReporter());\n' +
-              '      jasmineEnv.addReporter(new jasmine.JUnitXmlReporter("target/test-reports/"));\n' +
-              '      jasmineEnv.addReporter(new jasmine.ConsoleReporter());\n' +
               '      window.onload = function() {\n' +
               '        jasmineEnv.execute();\n' +
               '      };\n' +

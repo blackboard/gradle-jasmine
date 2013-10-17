@@ -19,6 +19,10 @@ class JasminePlugin  implements Plugin<Project> {
   void apply( Project project ) {
     JasmineTask task = (JasmineTask)project.task( "jasmine", type: JasmineTask )
     task.fileResolver = fileResolver
+
+    project.afterEvaluate {
+      project.test.dependsOn task
+    }
   }
 
 }
