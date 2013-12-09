@@ -90,7 +90,7 @@ class JasmineTask extends DefaultTask {
   }
 
   public void runJasmine( File file ) {
-    def jasmineTestPath = project.buildDir.absolutePath + "/jasmine/"
+    def jasmineTestPath = project.buildDir.absolutePath.replace("\\","/") + "/jasmine/"
     project.mkdir( jasmineTestPath )
 
     writeJasmineResources( jasmineTestPath )
@@ -106,7 +106,7 @@ class JasmineTask extends DefaultTask {
         if ( line.trim().startsWith( "testing(") ) {
           def includeFile = line.trim().substring( 8, line.trim().lastIndexOf( ')' ) ).trim()
           includeFile = findFileUnderTest( file, includeFile.substring( 1, includeFile.length() - 1 ) )
-          out.println( '    <script type="text/javascript" src="' + includeFile.absolutePath + '"></script>' )
+          out.println( '    <script type="text/javascript" src="' + includeFile.absolutePath.replace("\\","/") + '"></script>' )
         }
         else if ( line.trim().startsWith( "runWith(") ) {
           def runFile = line.trim().substring( 8, line.trim().lastIndexOf( ')' ) ).trim()
@@ -114,13 +114,13 @@ class JasmineTask extends DefaultTask {
         }
       }
 
-      out.println( '    <script type="text/javascript" src="' + file.absolutePath + '"></script>' )
+      out.println( '    <script type="text/javascript" src="' + file.absolutePath.replace("\\","/") + '"></script>' )
       out.println( '  </head>\n  <body>\n  </body>\n</html>' )
     }
 
     def phantomjs = (System.getProperty("os.name").toLowerCase().contains("windows") ? "phantomjs.exe" : "phantomjs")
     project.exec {
-      commandLine = [phantomjs, jasmineTestPath + 'run-jasmine.js', driver.absolutePath]
+      commandLine = [phantomjs, jasmineTestPath + 'run-jasmine.js', driver.absolutePath.replace("\\","/")]
     }
   }
 
